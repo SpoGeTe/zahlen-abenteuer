@@ -1,0 +1,1190 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zahlen-Abenteuer</title>
+<meta name="description" content="Spielerisch üben: Zahlen bis 100, Zehner und Einer, Verliebte Zahlen, Verdoppeln und Halbieren – für die 2. Klasse.">
+<meta name="theme-color" content="#ff9f43">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zahlen-Abenteuer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root {
+  --bg: #fff7e8;
+  --karte: #ffffff;
+  --text: #2b2340;
+  --leise: #6f6787;
+  --linie: #eadfca;
+  --orange: #ff9f43;
+  --gruen: #22b573;
+  --gruen-hell: #dcf7e9;
+  --rot: #f0524f;
+  --rot-hell: #ffe3e2;
+  --gelb: #ffc93c;
+  --blau: #4f8cf7;
+  --zehner: #3b7bea;
+  --einer: #ff8a3d;
+  --schatten: 0 4px 0 rgba(43, 35, 64, .12), 0 8px 24px rgba(43, 35, 64, .08);
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  background-image: radial-gradient(#f3e4c6 1.4px, transparent 1.4px);
+  background-size: 22px 22px;
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1.35;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:focus-visible, input:focus-visible { outline: 4px solid var(--blau); outline-offset: 3px; }
+
+/* Kopfzeile */
+.kopf {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 10px;
+  padding: calc(8px + env(safe-area-inset-top)) 14px 8px;
+  background: rgba(255, 247, 232, .92); backdrop-filter: blur(6px);
+  border-bottom: 2px solid var(--linie);
+}
+.kopf .titel { font-weight: 900; font-size: 1.1rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rund {
+  width: 50px; height: 50px; border-radius: 50%; flex: none;
+  background: var(--karte); box-shadow: var(--schatten); font-size: 1.45rem;
+  display: grid; place-items: center;
+}
+.rund:active { transform: translateY(2px); }
+.sterne-zahl { background: var(--karte); box-shadow: var(--schatten); border-radius: 999px; padding: 8px 14px; font-weight: 900; white-space: nowrap; }
+
+main { max-width: 900px; margin: 0 auto; padding: 16px 14px calc(30px + env(safe-area-inset-bottom)); }
+
+/* Igel-Sprechblase */
+.igel { display: flex; align-items: flex-end; gap: 12px; margin: 6px 0 18px; }
+.igel .tier { font-size: 4rem; line-height: 1; filter: drop-shadow(0 3px 0 rgba(0,0,0,.08)); animation: wippen 3s ease-in-out infinite; }
+.igel .blase {
+  position: relative; background: var(--karte); border-radius: 22px; padding: 14px 18px;
+  box-shadow: var(--schatten); font-weight: 700; flex: 1;
+}
+.igel .blase::before { content: ""; position: absolute; left: -10px; bottom: 18px; border: 10px solid transparent; border-right-color: var(--karte); border-left: 0; }
+@keyframes wippen { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg) translateY(-3px); } }
+
+/* Inselkarte */
+.inseln { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.insel {
+  position: relative; text-align: left; border-radius: 26px; padding: 16px 16px 14px;
+  background: var(--karte); box-shadow: var(--schatten);
+  border: 4px solid var(--farbe); min-height: 150px;
+  display: flex; flex-direction: column; gap: 6px;
+  transition: transform .12s;
+}
+.insel:active { transform: scale(.97); }
+.insel .icon { font-size: 2.6rem; line-height: 1; }
+.insel .name { font-weight: 900; font-size: 1.1rem; line-height: 1.15; }
+.insel .mini { font-size: .95rem; letter-spacing: 1px; margin-top: auto; }
+.insel.schatz { grid-column: 1 / -1; background: linear-gradient(135deg, #fff3c4, #ffe08a); min-height: 0; flex-direction: row; align-items: center; gap: 14px; }
+.insel.schatz .icon { font-size: 3rem; }
+.erwachsene { display: block; margin: 26px auto 0; color: var(--leise); font-size: .85rem; text-decoration: underline; }
+
+/* Allgemeine Karten und Knöpfe */
+.karte { background: var(--karte); border-radius: 26px; box-shadow: var(--schatten); padding: 20px; }
+.knopf {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 60px; padding: 12px 26px; border-radius: 20px;
+  background: var(--farbe, var(--orange)); color: #fff; font-weight: 900; font-size: 1.2rem;
+  box-shadow: 0 5px 0 rgba(0,0,0,.18);
+}
+.knopf:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.knopf.hell { background: var(--karte); color: var(--text); box-shadow: var(--schatten); }
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 18px; }
+
+/* Stationsseite */
+.station-kopf { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.station-kopf .icon { font-size: 3.4rem; }
+.station-kopf h1 { margin: 0; font-size: 1.6rem; }
+.tipp { background: #fffaf0; border: 3px dashed var(--farbe); border-radius: 20px; padding: 14px 16px; margin: 12px 0 16px; }
+.tipp .viz { max-width: 260px; margin: 8px auto 0; display: block; }
+.stufen { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stufe-knopf {
+  border-radius: 20px; padding: 14px 8px; background: var(--karte); box-shadow: var(--schatten);
+  border: 4px solid transparent; display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 900;
+}
+.stufe-knopf.aktiv { border-color: var(--farbe); }
+.stufe-knopf[disabled] { opacity: .45; }
+.stufe-knopf small { font-weight: 600; font-size: .75rem; color: var(--leise); text-align: center; }
+
+/* Spiel */
+.spiel-kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.fortschritt { flex: 1; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.fortschritt i { width: 18px; height: 18px; border-radius: 50%; background: #eadfca; display: block; }
+.fortschritt i.ok { background: var(--gruen); }
+.fortschritt i.halb { background: var(--gelb); }
+.fortschritt i.nein { background: var(--rot); }
+.fortschritt i.jetzt { background: var(--farbe); transform: scale(1.25); }
+.stufe-chip { background: var(--farbe); color: #fff; font-weight: 900; border-radius: 999px; padding: 6px 12px; font-size: .85rem; white-space: nowrap; }
+.aufgabe { text-align: center; }
+.aufgabe-text { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1.45rem; font-weight: 900; margin: 4px 0 6px; }
+.vorlesen { font-size: 1.3rem; width: 46px; height: 46px; border-radius: 50%; background: #f4ecdc; flex: none; }
+.unter { color: var(--leise); font-weight: 700; margin-bottom: 4px; }
+.viz-box { position: relative; margin: 10px auto 14px; display: flex; justify-content: center; align-items: center; min-height: 40px; }
+.viz { display: block; width: 100%; height: auto; }
+.viz.dienes { max-width: 420px; max-height: 210px; }
+.viz.hunderter { max-width: 260px; }
+.viz.strahl { max-width: 760px; }
+.viz.geheim { max-width: 380px; max-height: 120px; }
+.viz.herz { max-width: 170px; }
+.viz.herz.halb { max-width: 96px; }
+.option .viz.herz.halb { max-height: 90px; width: auto; }
+.viz.reihen { max-width: 380px; }
+.decke {
+  position: absolute; inset: 0; border-radius: 20px; display: none;
+  background: repeating-linear-gradient(45deg, #b9b3c9, #b9b3c9 14px, #c7c1d6 14px, #c7c1d6 28px);
+  align-items: center; justify-content: center; font-size: 3.5rem;
+}
+.viz-box.verdeckt .decke { display: flex; animation: aufklappen .25s ease-out; }
+@keyframes aufklappen { from { transform: scaleY(0); } }
+.nochmal-zeigen { margin-top: -4px; margin-bottom: 10px; }
+
+.zehner { fill: var(--zehner); stroke: #1f4fb0; stroke-width: 1.2; }
+.zehner-linie { stroke: #1f4fb0; stroke-width: 1; }
+.einer { fill: var(--einer); stroke: #c45a12; stroke-width: 1.2; }
+.voll { fill: #e2483d; }
+.leer { fill: none; stroke: #c9bfae; stroke-width: 1.1; }
+
+/* Stellenwerttafel und große Zahl */
+.stellenwert { border-collapse: collapse; margin: 0 auto; font-size: 2.2rem; font-weight: 900; }
+.stellenwert th, .stellenwert td { border: 4px solid var(--text); width: 90px; height: 70px; text-align: center; }
+.stellenwert th { font-size: 1.3rem; height: 46px; }
+.stellenwert th:first-child, .stellenwert td:first-child { color: var(--zehner); }
+.stellenwert th:last-child, .stellenwert td:last-child { color: var(--einer); }
+.grosse-zahl { font-size: 4rem; font-weight: 900; letter-spacing: 2px; }
+.grosse-zahl .z { color: var(--zehner); } .grosse-zahl .e { color: var(--einer); }
+
+/* Antworten: Auswahl */
+.wahl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 520px; margin: 0 auto; }
+.wahl.vier { grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 720px; }
+.option {
+  min-height: 78px; border-radius: 22px; background: var(--karte); box-shadow: var(--schatten);
+  border: 4px solid var(--linie); font-size: 2rem; font-weight: 900; padding: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.option svg { width: 100%; max-height: 110px; }
+.option:active { transform: translateY(2px); }
+.option.falsch { border-color: var(--rot); background: var(--rot-hell); opacity: .55; }
+.option.richtig { border-color: var(--gruen); background: var(--gruen-hell); }
+.option[disabled] { cursor: default; }
+
+/* Antworten: Eingabe */
+.zeile { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; font-size: 2rem; font-weight: 900; margin-bottom: 14px; }
+.zeile .fest { padding: 6px 4px; }
+.zeile .kasten { background: #f4ecdc; border-radius: 16px; padding: 6px 16px; }
+.feld-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.feld-wrap small { font-size: .8rem; color: var(--leise); font-weight: 700; }
+.feld {
+  min-width: 96px; height: 72px; border-radius: 18px; border: 4px solid var(--linie); background: #fff;
+  font-size: 2.3rem; font-weight: 900; display: flex; align-items: center; justify-content: center; padding: 0 10px;
+}
+.feld.aktiv { border-color: var(--farbe); box-shadow: 0 0 0 4px color-mix(in srgb, var(--farbe) 25%, transparent); }
+.feld.aktiv:empty::after { content: ""; width: 3px; height: 40px; background: var(--farbe); animation: blinken 1s steps(1) infinite; }
+.feld.falsch { border-color: var(--rot); background: var(--rot-hell); }
+.feld.richtig { border-color: var(--gruen); background: var(--gruen-hell); }
+@keyframes blinken { 50% { opacity: 0; } }
+.tasten { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 360px; margin: 0 auto; }
+.taste {
+  height: 64px; border-radius: 18px; background: var(--karte); box-shadow: var(--schatten);
+  font-size: 1.8rem; font-weight: 900;
+}
+.taste:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.12); }
+.taste.ok { background: var(--gruen); color: #fff; }
+.taste.weg { background: #f4ecdc; }
+
+/* Legen */
+.legen { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 460px; margin: 0 auto 12px; }
+.legen .knopf { min-height: 64px; font-size: 1.1rem; padding: 8px; }
+.legen .z { --farbe: var(--zehner); }
+.legen .e { --farbe: var(--einer); }
+
+/* Hören */
+.hoeren { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 6px 0 4px; }
+.lautsprecher { font-size: 3rem; width: 110px; height: 110px; border-radius: 50%; background: var(--farbe); color: #fff; box-shadow: 0 6px 0 rgba(0,0,0,.18); }
+.lautsprecher:active { transform: translateY(3px); }
+.wort { font-size: 1.6rem; font-weight: 900; color: var(--farbe); min-height: 1.6em; }
+
+/* Rückmeldung */
+.rueckmeldung {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  padding: 16px 16px calc(18px + env(safe-area-inset-bottom));
+  border-radius: 28px 28px 0 0; box-shadow: 0 -6px 24px rgba(0,0,0,.12);
+  display: none; animation: hoch .25s ease-out;
+}
+.rueckmeldung.an { display: block; }
+.rueckmeldung.gut { background: var(--gruen-hell); border-top: 5px solid var(--gruen); }
+.rueckmeldung.tipp-an { background: #fff3cf; border-top: 5px solid var(--gelb); }
+.rueckmeldung.schlecht { background: var(--rot-hell); border-top: 5px solid var(--rot); }
+.rm-inhalt { max-width: 760px; margin: 0 auto; display: flex; gap: 14px; align-items: center; }
+.rm-inhalt .tier { font-size: 3.2rem; line-height: 1; }
+.rm-text { flex: 1; font-weight: 700; }
+.rm-text strong { display: block; font-size: 1.45rem; }
+.rm-text .viz { max-width: 260px; margin-top: 6px; }
+.rueckmeldung .knopf { --farbe: var(--gruen); }
+.rueckmeldung.schlecht .knopf { --farbe: var(--blau); }
+@keyframes hoch { from { transform: translateY(100%); } }
+.wackeln { animation: wackeln .35s; }
+@keyframes wackeln { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+/* Ergebnis */
+.ergebnis { text-align: center; }
+.grosse-sterne { font-size: 4.2rem; letter-spacing: 6px; margin: 6px 0; }
+.grosse-sterne span { display: inline-block; animation: plopp .5s both; }
+.grosse-sterne span:nth-child(2) { animation-delay: .25s; }
+.grosse-sterne span:nth-child(3) { animation-delay: .5s; }
+.grosse-sterne .aus { filter: grayscale(1); opacity: .25; }
+@keyframes plopp { from { transform: scale(0) rotate(-40deg); } 70% { transform: scale(1.3); } }
+.neuer-sticker { margin-top: 14px; padding: 14px; border-radius: 22px; background: #fff3c4; font-weight: 800; }
+.neuer-sticker .emoji { font-size: 4rem; display: block; animation: plopp .6s .6s both; }
+
+/* Stickerheft */
+.album { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; }
+.sticker { background: var(--karte); border-radius: 22px; box-shadow: var(--schatten); padding: 12px 6px; text-align: center; }
+.sticker .emoji { font-size: 3rem; display: block; line-height: 1.1; }
+.sticker small { font-weight: 800; font-size: .8rem; }
+.sticker.zu { background: #efe7d6; box-shadow: none; }
+.sticker.zu .emoji { filter: grayscale(1) opacity(.35); }
+
+/* Erwachsene */
+.tabelle { width: 100%; border-collapse: collapse; font-size: .95rem; background: #fff; border-radius: 14px; overflow: hidden; }
+.tabelle th, .tabelle td { padding: 8px 10px; border-bottom: 1px solid var(--linie); text-align: left; }
+.tabelle th { background: #f6efe0; }
+.klein { font-size: .9rem; color: var(--leise); }
+input.text {
+  font: inherit; font-size: 1.3rem; padding: 12px 16px; border-radius: 16px; border: 3px solid var(--linie);
+  width: 100%; max-width: 360px; background: #fff; user-select: text; -webkit-user-select: text;
+}
+
+/* Konfetti */
+#konfetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; overflow: hidden; }
+#konfetti span { position: absolute; top: -40px; font-size: 1.8rem; animation: fallen linear forwards; }
+@keyframes fallen { to { transform: translateY(110vh) rotate(540deg); } }
+
+@media (max-width: 560px) {
+  body { font-size: 18px; }
+  .wahl.vier { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .aufgabe-text { font-size: 1.25rem; }
+  .inseln { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .insel { min-height: 130px; }
+  .grosse-zahl { font-size: 3.2rem; }
+  .stufen { gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<header class="kopf">
+  <button class="rund" id="heim" aria-label="Zur Karte">🏠</button>
+  <div class="titel">Zahlen-Abenteuer</div>
+  <span class="sterne-zahl" id="sternzahl">⭐ 0</span>
+  <button class="rund" id="albumKnopf" aria-label="Stickerheft">📒</button>
+  <button class="rund" id="tonKnopf" aria-label="Ton an oder aus">🔊</button>
+</header>
+<main id="bild"></main>
+<div class="rueckmeldung" id="rm" aria-live="polite"></div>
+<div id="konfetti" aria-hidden="true"></div>
+
+<script>
+'use strict';
+// =====================================================================
+//  Zahlen-Abenteuer – Übungs-App für die 2. Klasse
+//  Themen: Zehner und Einer, Zahlen bis 100, Stellenwerttafel,
+//  Geheimschrift, Hunderterfeld, Zahlenstrahl, Nachbarzahlen,
+//  Zahlen hören/schreiben, Verliebte Zahlen, Verdoppeln und Halbieren.
+//  Alle Daten bleiben im Browser des Geräts (localStorage).
+// =====================================================================
+
+const bild = document.getElementById('bild');
+const rm = document.getElementById('rm');
+
+// ---------- Hilfsfunktionen ----------
+const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+function mischen(a) { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; }
+const ohneTags = (s) => String(s).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ');
+const Z = (n) => Math.floor(n / 10), E = (n) => n % 10;
+
+function dreher(n) {
+  if (n < 10 || n > 99) return null;
+  const z = Z(n), e = E(n);
+  if (e === 0 || e === z) return null;
+  return e * 10 + z;
+}
+function zahlOptionen(n, min = 0, max = 100) {
+  const set = new Set([n]);
+  const d = dreher(n);
+  if (d !== null && d >= min && d <= max) set.add(d);
+  for (const c of mischen([n + 1, n - 1, n + 10, n - 10, n + 2, n - 2])) {
+    if (set.size >= 4) break;
+    if (c >= min && c <= max) set.add(c);
+  }
+  while (set.size < 4) set.add(rnd(min, max));
+  return mischen([...set]).map(w => ({ wert: w }));
+}
+
+const EINS = ['null', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf', 'dreizehn', 'vierzehn', 'fünfzehn', 'sechzehn', 'siebzehn', 'achtzehn', 'neunzehn'];
+const ZIG = ['', 'zehn', 'zwanzig', 'dreißig', 'vierzig', 'fünfzig', 'sechzig', 'siebzig', 'achtzig', 'neunzig'];
+function zahlwort(n) {
+  if (n === 100) return 'hundert';
+  if (n < 20) return EINS[n];
+  if (E(n) === 0) return ZIG[Z(n)];
+  return (E(n) === 1 ? 'ein' : EINS[E(n)]) + 'und' + ZIG[Z(n)];
+}
+
+// ---------- Speicher (nur auf diesem Gerät) ----------
+const SPEICHER = 'zahlen-abenteuer-v1';
+let S = { name: '', ton: true, stationen: {}, fehler: [], runden: 0 };
+try { Object.assign(S, JSON.parse(localStorage.getItem(SPEICHER)) || {}); } catch { /* kein Speicher */ }
+function sichern() { try { localStorage.setItem(SPEICHER, JSON.stringify(S)); } catch { /* privates Fenster */ } }
+function stationsDaten(id) {
+  if (!S.stationen[id]) S.stationen[id] = { best: { 1: 0, 2: 0, 3: 0 }, gespielt: 0 };
+  return S.stationen[id];
+}
+function freieStufe(id) {
+  const b = stationsDaten(id).best;
+  return b[2] >= 2 ? 3 : b[1] >= 2 ? 2 : 1;
+}
+function sterneGesamt() {
+  return alleStationen().reduce((s, st) => { const b = stationsDaten(st.id).best; return s + b[1] + b[2] + b[3]; }, 0);
+}
+
+// ---------- Ton und Sprache ----------
+let audio;
+function ton(freqs, dauer = 0.11, art = 'sine', laut = 0.14) {
+  if (!S.ton) return;
+  try {
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const t = audio.currentTime;
+    freqs.forEach((f, i) => {
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = art; o.frequency.value = f;
+      g.gain.setValueAtTime(laut, t + i * dauer);
+      g.gain.exponentialRampToValueAtTime(0.001, t + i * dauer + dauer * 0.95);
+      o.connect(g).connect(audio.destination);
+      o.start(t + i * dauer); o.stop(t + i * dauer + dauer);
+    });
+  } catch { /* ohne Ton */ }
+}
+const klang = {
+  richtig: () => ton([660, 880, 1320], 0.09),
+  falsch: () => ton([330, 247], 0.14, 'triangle', 0.1),
+  tipp: () => ton([520, 440], 0.1, 'triangle', 0.08),
+  sterne: () => ton([523, 659, 784, 1047, 1319], 0.12),
+  klick: () => ton([700], 0.04, 'sine', 0.05),
+};
+
+const kannSprechen = 'speechSynthesis' in window;
+function sprich(text) {
+  if (!kannSprechen) return false;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE';
+    const stimme = speechSynthesis.getVoices().find(v => v.lang && v.lang.toLowerCase().startsWith('de'));
+    if (stimme) u.voice = stimme;
+    u.rate = 0.85;
+    speechSynthesis.speak(u);
+    return true;
+  } catch { return false; }
+}
+if (kannSprechen) speechSynthesis.getVoices();
+
+// ---------- Bilder (SVG) ----------
+let svgId = 0;
+
+function dienes(z, e) {
+  const sw = 16, zelle = 12, sh = zelle * 10, abstand = 8;
+  let s = '', x = 4;
+  for (let i = 0; i < z; i++) {
+    s += `<rect class="zehner" x="${x}" y="4" width="${sw}" height="${sh}" rx="3"/>`;
+    for (let k = 1; k < 10; k++) s += `<line class="zehner-linie" x1="${x}" y1="${4 + k * zelle}" x2="${x + sw}" y2="${4 + k * zelle}"/>`;
+    x += sw + abstand;
+  }
+  if (z && e) x += 10;
+  const c = 12, cg = 4;
+  for (let j = 0; j < e; j++) {
+    const spalte = Math.floor(j / 5), reihe = j % 5;
+    s += `<rect class="einer" x="${x + spalte * (c + cg)}" y="${4 + sh - (reihe + 1) * (c + cg) + cg}" width="${c}" height="${c}" rx="2"/>`;
+  }
+  const w = x + Math.ceil(e / 5) * (c + cg) + 4;
+  return `<svg class="viz dienes" viewBox="0 0 ${Math.max(w, 40)} ${sh + 8}" role="img" aria-label="${z} Zehnerstangen und ${e} Einerwürfel">${s}</svg>`;
+}
+
+function hunderter(n) {
+  let s = '';
+  for (let i = 0; i < 100; i++) {
+    const r = Math.floor(i / 10), c = i % 10;
+    const cx = 8 + c * 12 + (c >= 5 ? 5 : 0), cy = 8 + r * 12 + (r >= 5 ? 5 : 0);
+    s += `<circle cx="${cx}" cy="${cy}" r="4.7" class="${i < n ? 'voll' : 'leer'}"/>`;
+  }
+  return `<svg class="viz hunderter" viewBox="0 0 133 133" role="img" aria-label="Hunderterfeld">${s}</svg>`;
+}
+
+function strahl(n, beschriftung) {
+  const x = (v) => 20 + v * 6.8;
+  let s = `<line x1="${x(0)}" y1="46" x2="${x(100) + 8}" y2="46" stroke="#2b2340" stroke-width="2.5"/>`;
+  for (let v = 0; v <= 100; v++) {
+    const lang = v % 10 === 0 ? 13 : v % 5 === 0 ? 9 : 5;
+    s += `<line x1="${x(v)}" y1="${46 - lang}" x2="${x(v)}" y2="${46 + lang}" stroke="#2b2340" stroke-width="${v % 10 === 0 ? 2.2 : 1.2}"/>`;
+    const zeigen = beschriftung === 'zehner' ? v % 10 === 0 : (v === 0 || v === 50 || v === 100);
+    if (zeigen) s += `<text x="${x(v)}" y="80" text-anchor="middle" font-size="15" font-weight="800" fill="#2b2340">${v}</text>`;
+  }
+  if (n !== null) s += `<path d="M${x(n) - 9},6 L${x(n) + 9},6 L${x(n)},26 Z" fill="#e2483d"/>`;
+  return `<svg class="viz strahl" viewBox="0 0 720 92" role="img" aria-label="Zahlenstrahl von 0 bis 100">${s}</svg>`;
+}
+
+function geheim(z, e, klein) {
+  let s = '', x = 10;
+  for (let i = 0; i < z; i++) { s += `<line x1="${x}" y1="8" x2="${x}" y2="58" stroke="#3b7bea" stroke-width="6" stroke-linecap="round"/>`; x += 16; }
+  if (z && e) x += 12;
+  for (let j = 0; j < e; j++) { s += `<circle cx="${x + 4}" cy="33" r="6.5" fill="#ff8a3d"/>`; x += 18; }
+  const w = Math.max(x + 6, 40);
+  return `<svg class="viz geheim" viewBox="0 0 ${w} 66" ${klein ? 'style="max-height:70px"' : ''} role="img" aria-label="Geheimschrift">${s}</svg>`;
+}
+
+const HERZ = 'M50,88 C20,65 2,45 2,27 C2,12 14,2 27,2 C38,2 46,9 50,18 C54,9 62,2 73,2 C86,2 98,12 98,27 C98,45 80,65 50,88 Z';
+function herzHaelfte(zahl, seite, farbe) {
+  const id = 'h' + (++svgId);
+  const links = '0,0 50,0 46,20 54,35 45,50 53,65 50,90 0,90';
+  const rechts = '50,0 100,0 100,90 50,90 53,65 45,50 54,35 46,20';
+  const tx = seite === 'links' ? 28 : 72;
+  const vb = seite === 'links' ? '0 0 56 90' : '44 0 56 90';
+  return `<svg class="viz herz halb" viewBox="${vb}" role="img" aria-label="Herzhälfte mit ${zahl}">` +
+    `<defs><clipPath id="${id}"><polygon points="${seite === 'links' ? links : rechts}"/></clipPath></defs>` +
+    `<path d="${HERZ}" fill="${farbe}" stroke="#2b2340" stroke-width="2.5" clip-path="url(#${id})"/>` +
+    `<text x="${tx}" y="50" text-anchor="middle" font-size="26" font-weight="900" fill="#fff">${zahl}</text></svg>`;
+}
+function herzGanz(a, b) {
+  return `<svg class="viz herz" viewBox="0 0 100 90" role="img" aria-label="Ganzes Herz"><path d="${HERZ}" fill="#ec4899" stroke="#2b2340" stroke-width="2.5"/>` +
+    `<text x="50" y="48" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">${a} + ${b}</text></svg>`;
+}
+
+function reihen(werte, farben = ['#e2483d', '#3b7bea']) {
+  // Zehnerstangen mit Kugeln wie auf dem Arbeitsblatt
+  let s = '';
+  werte.forEach((anzahl, r) => {
+    const y = 6 + r * 26;
+    s += `<rect x="2" y="${y}" width="134" height="20" rx="6" fill="#fff" stroke="#2b2340" stroke-width="2"/>`;
+    for (let i = 0; i < 10; i++) {
+      const cx = 12 + i * 12 + (i >= 5 ? 4 : 0);
+      s += `<circle cx="${cx}" cy="${y + 10}" r="4.8" ${i < anzahl ? `fill="${farben[r % farben.length]}"` : 'fill="none" stroke="#c9bfae" stroke-width="1.2"'}/>`;
+    }
+  });
+  return `<svg class="viz reihen" viewBox="0 0 138 ${8 + werte.length * 26}" role="img" aria-label="Zehnerreihen">${s}</svg>`;
+}
+function verliebtStreifen(a) {
+  let s = `<rect x="2" y="6" width="134" height="20" rx="6" fill="#fff" stroke="#2b2340" stroke-width="2"/>`;
+  for (let i = 0; i < 10; i++) {
+    const cx = 12 + i * 12 + (i >= 5 ? 4 : 0);
+    s += `<circle cx="${cx}" cy="16" r="4.8" fill="${i < a ? '#ec4899' : '#3b7bea'}"/>`;
+  }
+  return `<svg class="viz reihen" viewBox="0 0 138 32" role="img" aria-label="${a} und ${10 - a}">${s}</svg>`;
+}
+function stellenwert(z, e) {
+  return `<table class="stellenwert" aria-label="Stellenwerttafel"><tr><th>Z</th><th>E</th></tr><tr><td>${z}</td><td>${e}</td></tr></table>`;
+}
+function grosseZahl(n) {
+  const t = String(n);
+  return t.length === 2 ? `<div class="grosse-zahl"><span class="z">${t[0]}</span><span class="e">${t[1]}</span></div>` : `<div class="grosse-zahl">${t}</div>`;
+}
+
+// ---------- Stationen ----------
+const STATIONEN = [
+  { id: 'zehner', name: 'Zehner und Einer', icon: '🧱', farbe: '#3b7bea',
+    tipp: () => `<b>10 Einer sind 1 Zehner.</b> Zähle erst die Stangen (Zehner), dann die Würfel (Einer).${dienes(4, 6)}<div style="text-align:center;font-weight:900">4 Zehner und 6 Einer = 46</div>`,
+    stufen: ['Zahl erkennen', 'Zahl schreiben', 'Legen und bündeln'] },
+  { id: 'geheim', name: 'Geheimschrift', icon: '🕵️', farbe: '#8b5cf6',
+    tipp: () => `In der Geheimschrift ist <b>ein Strich ein Zehner</b> und <b>ein Punkt ein Einer</b>.${geheim(3, 4)}<div style="text-align:center;font-weight:900">3 Striche und 4 Punkte = 34</div>`,
+    stufen: ['Lesen (auswählen)', 'Lesen (schreiben)', 'Richtige Schrift finden'] },
+  { id: 'blitz', name: 'Blitzblick', icon: '⚡', farbe: '#f59e0b',
+    tipp: () => `Das Hunderterfeld wird gleich zugedeckt! <b>Jede volle Reihe ist ein Zehner.</b>${hunderter(23)}<div style="text-align:center;font-weight:900">2 volle Reihen und 3 Punkte = 23</div>`,
+    stufen: ['Langsam', 'Schneller', 'Blitzschnell'] },
+  { id: 'strahl', name: 'Zahlenstrahl', icon: '📏', farbe: '#10b981',
+    tipp: () => `Die langen Striche sind die <b>Zehnerzahlen</b>. Der mittlere Strich liegt genau bei der <b>5</b>.${strahl(35, 'zehner')}`,
+    stufen: ['Zehnerzahlen', 'Alle Zahlen', 'Ohne Zehner-Hilfe'] },
+  { id: 'nachbar', name: 'Nachbarzahlen', icon: '🏡', farbe: '#ef4444',
+    tipp: () => `Der <b>Vorgänger</b> ist 1 weniger, der <b>Nachfolger</b> ist 1 mehr.<div class="zeile" style="margin-top:10px"><span class="kasten">45</span><span class="kasten" style="background:#ffe3e2">46</span><span class="kasten">47</span></div>`,
+    stufen: ['Davor oder danach', 'Beide Nachbarn', 'Nachbarzehner'] },
+  { id: 'hoeren', name: 'Zahlen hören', icon: '👂', farbe: '#0ea5e9',
+    tipp: () => `Hör genau hin! Bei <b>sechsundvierzig</b> hörst du zuerst die 6 – aber du <b>schreibst zuerst die 4</b> (Zehner).${grosseZahl(46)}`,
+    stufen: ['Auswählen', 'Schreiben', 'Zahlendreher-Profi'] },
+  { id: 'verliebt', name: 'Verliebte Zahlen', icon: '💕', farbe: '#ec4899',
+    tipp: () => `Zwei Zahlen sind <b>verliebt</b>, wenn sie zusammen <b>10</b> ergeben.<div style="display:flex;justify-content:center;gap:6px;margin-top:8px">${herzGanz(3, 7)}</div>${verliebtStreifen(3)}`,
+    stufen: ['Herz finden', 'Partner schreiben', 'Verliebt bis 100'] },
+  { id: 'doppel', name: 'Verdoppeln und Halbieren', icon: '🪞', farbe: '#14b8a6',
+    tipp: () => `<b>Verdoppeln:</b> die Zahl plus sich selbst, z. B. 6 + 6 = 12.<br><b>Halbieren:</b> gerecht in zwei Teile teilen, z. B. die Hälfte von 12 ist 6.${reihen([6, 6])}`,
+    stufen: ['Kleine Zahlen', 'Bis 20', 'Rechentricks'] },
+];
+const SCHATZ = { id: 'schatz', name: 'Schatzsuche', icon: '💎', farbe: '#d4a017',
+  tipp: () => 'Hier kommen Aufgaben von <b>allen Inseln</b> gemischt. Sammle viele Sterne!',
+  stufen: ['Gemischt', 'Gemischt+', 'Profi-Mix'] };
+const alleStationen = () => [...STATIONEN, SCHATZ];
+const station = (id) => alleStationen().find(s => s.id === id);
+
+// ---------- Aufgaben-Generatoren ----------
+// Aufgabe: { text, unter?, viz?, typ: 'wahl' | 'eingabe' | 'legen', optionen?, felder?, zeile?, loesung, hinweis, erklaerung, ... }
+const GEN = {
+  zehner(l) {
+    if (l === 1) {
+      const n = rnd(11, 59);
+      return { text: 'Welche Zahl ist das?', viz: dienes(Z(n), E(n)), typ: 'wahl', optionen: zahlOptionen(n, 10, 99), loesung: n,
+        hinweis: 'Zähle zuerst die blauen Zehnerstangen, dann die orangen Einerwürfel.',
+        erklaerung: `${Z(n)} Zehner und ${E(n)} Einer sind <b>${n}</b>.` };
+    }
+    if (l === 2) {
+      const n = rnd(11, 99), art = rnd(1, 3);
+      if (art === 1) return { text: 'Welche Zahl ist das?', viz: dienes(Z(n), E(n)), typ: 'eingabe', felder: [{ loesung: n }],
+        hinweis: 'Zehner zuerst schreiben, dann die Einer.', erklaerung: `${Z(n)} Zehner und ${E(n)} Einer sind <b>${n}</b>.` };
+      if (art === 2) return { text: 'Welche Zahl steht in der Stellenwerttafel?', viz: stellenwert(Z(n), E(n)), typ: 'eingabe', felder: [{ loesung: n }],
+        hinweis: 'Z heißt Zehner, E heißt Einer.', erklaerung: `${Z(n)} Zehner und ${E(n)} Einer sind <b>${n}</b>.` };
+      return { text: `Wie viele Zehner und Einer hat die ${n}?`, viz: grosseZahl(n), typ: 'eingabe',
+        felder: [{ loesung: Z(n), label: 'Zehner' }, { loesung: E(n), label: 'Einer' }], zeile: [{ feld: 0 }, { fest: 'Z' }, { feld: 1 }, { fest: 'E' }],
+        hinweis: 'Die erste Ziffer sind die Zehner, die zweite die Einer.', erklaerung: `<b>${n}</b> hat ${Z(n)} Zehner und ${E(n)} Einer.` };
+    }
+    if (Math.random() < 0.55) {
+      const n = rnd(21, 99);
+      return { text: `Lege die Zahl ${n}!`, typ: 'legen', ziel: n, loesung: n,
+        hinweis: `${n} hat ${Z(n)} Zehner und ${E(n)} Einer.`, erklaerung: `Für <b>${n}</b> brauchst du ${Z(n)} Zehnerstangen und ${E(n)} Einerwürfel.` };
+    }
+    const z = rnd(1, 6), e = rnd(11, 19), n = z * 10 + e;
+    return { text: 'Bündle! Welche Zahl ist das?', unter: 'Achtung: Es sind mehr als 10 Einer.', viz: dienes(z, e), typ: 'eingabe', felder: [{ loesung: n }],
+      hinweis: 'Immer 10 Einer kannst du zu 1 Zehner bündeln.',
+      erklaerung: `${e} Einer = 1 Zehner und ${e - 10} Einer. Also ${z + 1} Zehner und ${e - 10} Einer = <b>${n}</b>.` };
+  },
+
+  geheim(l) {
+    const n = l === 1 ? rnd(11, 49) : rnd(11, 99);
+    const z = Z(n), e = E(n);
+    if (l === 1) return { text: 'Was steht in Geheimschrift da?', viz: geheim(z, e), typ: 'wahl', optionen: zahlOptionen(n, 10, 99), loesung: n,
+      hinweis: 'Striche sind Zehner, Punkte sind Einer.', erklaerung: `${z} Striche und ${e} Punkte sind <b>${n}</b>.` };
+    if (l === 2) return { text: 'Was steht in Geheimschrift da?', viz: geheim(z, e), typ: 'eingabe', felder: [{ loesung: n }],
+      hinweis: 'Zähle die Striche (Zehner) und die Punkte (Einer).', erklaerung: `${z} Striche und ${e} Punkte sind <b>${n}</b>.` };
+    const kand = [[z, e]];
+    if (e !== z && e > 0) kand.push([e, z]);
+    for (const [a, b] of mischen([[z + 1, e], [z, e + 1], [Math.max(z - 1, 0), e], [z, Math.max(e - 1, 0)]])) {
+      if (kand.length >= 4) break;
+      if (a <= 9 && b <= 9 && !kand.some(k => k[0] === a && k[1] === b)) kand.push([a, b]);
+    }
+    return { text: `Welche Geheimschrift zeigt die ${n}?`, viz: grosseZahl(n), typ: 'wahl', breit: true,
+      optionen: mischen(kand).map(([a, b]) => ({ wert: a * 10 + b, html: geheim(a, b, true) })), loesung: n,
+      hinweis: `Du brauchst ${z} Striche für die Zehner.`, erklaerung: `<b>${n}</b> = ${z} Striche und ${e} Punkte.${geheim(z, e, true)}` };
+  },
+
+  blitz(l) {
+    const n = l === 1 ? rnd(1, 9) * 10 + pick([0, 0, 5]) : rnd(11, 99);
+    return { text: 'Wie viele Punkte siehst du?', viz: hunderter(n), typ: 'wahl', optionen: zahlOptionen(n, 1, 100), loesung: n,
+      dauer: [3200, 2400, 1500][l - 1],
+      hinweis: 'Volle Reihen sind Zehner. Dann zählst du die einzelnen Punkte.',
+      erklaerung: `${Z(n)} volle Reihen sind ${Z(n)} Zehner, dazu ${E(n)} Punkte. Das sind <b>${n}</b>.${hunderter(n)}` };
+  },
+
+  strahl(l) {
+    if (l === 1) {
+      const n = rnd(1, 9) * 10;
+      return { text: 'Auf welche Zahl zeigt der Pfeil?', viz: strahl(n, 'zehner'), typ: 'wahl', optionen: mischen([n, ...mischen([10, 20, 30, 40, 50, 60, 70, 80, 90].filter(v => v !== n)).slice(0, 3)]).map(w => ({ wert: w })), loesung: n,
+        hinweis: 'Schau auf die Zahl unter dem langen Strich.', erklaerung: `Der Pfeil zeigt auf <b>${n}</b>.` };
+    }
+    if (l === 2) {
+      let n; do { n = rnd(2, 98); } while (n % 10 === 0);
+      return { text: 'Auf welche Zahl zeigt der Pfeil?', viz: strahl(n, 'zehner'), typ: 'wahl', optionen: zahlOptionen(n, 1, 99), loesung: n,
+        hinweis: `Suche den Zehner davor (${Z(n) * 10}) und zähle die kleinen Schritte weiter.`,
+        erklaerung: `Von ${Z(n) * 10} aus sind es ${E(n)} kleine Schritte: <b>${n}</b>.` };
+    }
+    const n = rnd(1, 19) * 5;
+    return { text: 'Auf welche Zahl zeigt der Pfeil?', unter: 'Nur 0, 50 und 100 stehen dran!', viz: strahl(n, 'grob'), typ: 'eingabe', felder: [{ loesung: n }],
+      hinweis: 'Die langen Striche sind 10, 20, 30 … Zähle von 0 oder von 50 aus.',
+      erklaerung: `Der Pfeil zeigt auf <b>${n}</b>.${strahl(n, 'zehner')}` };
+  },
+
+  nachbar(l) {
+    if (l === 1) {
+      const n = rnd(11, 98);
+      if (Math.random() < 0.5) return { text: `Welche Zahl kommt direkt nach ${n}?`, typ: 'eingabe', felder: [{ loesung: n + 1 }], zeile: [{ kasten: n }, { fest: '→' }, { feld: 0 }],
+        hinweis: 'Der Nachfolger ist 1 mehr.', erklaerung: `${n} + 1 = <b>${n + 1}</b>.` };
+      return { text: `Welche Zahl kommt direkt vor ${n}?`, typ: 'eingabe', felder: [{ loesung: n - 1 }], zeile: [{ feld: 0 }, { fest: '→' }, { kasten: n }],
+        hinweis: 'Der Vorgänger ist 1 weniger.', erklaerung: `${n} − 1 = <b>${n - 1}</b>.` };
+    }
+    if (l === 2) {
+      const n = Math.random() < 0.35 ? pick([rnd(1, 9) * 10, Math.min(rnd(1, 9) * 10 + 9, 98)]) : rnd(11, 98);
+      return { text: 'Finde beide Nachbarzahlen!', typ: 'eingabe', felder: [{ loesung: n - 1, label: 'davor' }, { loesung: n + 1, label: 'danach' }],
+        zeile: [{ feld: 0 }, { kasten: n }, { feld: 1 }],
+        hinweis: 'Davor ist 1 weniger, danach ist 1 mehr. Achtung beim Zehner!', erklaerung: `<b>${n - 1}</b>, ${n}, <b>${n + 1}</b>` };
+    }
+    let n; do { n = rnd(11, 99); } while (n % 10 === 0);
+    return { text: 'Zwischen welchen Zehnerzahlen liegt die Zahl?', typ: 'eingabe', felder: [{ loesung: Z(n) * 10, label: 'Zehner davor' }, { loesung: Z(n) * 10 + 10, label: 'Zehner danach' }],
+      zeile: [{ feld: 0 }, { fest: '…' }, { kasten: n }, { fest: '…' }, { feld: 1 }],
+      hinweis: 'Zehnerzahlen enden mit einer 0: 10, 20, 30 …', erklaerung: `<b>${Z(n) * 10}</b> … ${n} … <b>${Z(n) * 10 + 10}</b>` };
+  },
+
+  hoeren(l) {
+    let n;
+    if (l === 1) { do { n = rnd(12, 98); } while (dreher(n) === null); }
+    else if (l === 2) n = rnd(11, 99);
+    else n = Math.random() < 0.3 ? rnd(13, 19) : (() => { let m; do { m = rnd(12, 98); } while (dreher(m) === null); return m; })();
+    const basis = { text: 'Hör gut zu! Welche Zahl hörst du?', hoeren: zahlwort(n), loesung: n,
+      hinweis: 'Du hörst zuerst die Einer – schreib aber zuerst die Zehner!',
+      erklaerung: `<b>${zahlwort(n)}</b> schreibt man <b>${n}</b>.` };
+    if (l === 1) return { ...basis, typ: 'wahl', optionen: zahlOptionen(n, 10, 99) };
+    return { ...basis, typ: 'eingabe', felder: [{ loesung: n }] };
+  },
+
+  verliebt(l) {
+    if (l === 1) {
+      const a = rnd(1, 9), p = 10 - a;
+      const andere = mischen([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].filter(v => v !== p)).slice(0, 3);
+      return { text: `In wen ist die ${a} verliebt?`, unter: 'Zusammen ergeben sie 10.', viz: herzHaelfte(a, 'links', '#ec4899'), typ: 'wahl', breit: true,
+        optionen: mischen([p, ...andere]).map(w => ({ wert: w, html: herzHaelfte(w, 'rechts', '#3b7bea') })), loesung: p,
+        hinweis: `Wie viel fehlt von ${a} bis 10?`, erklaerung: `${a} und ${p} sind verliebt: ${a} + ${p} = 10.${verliebtStreifen(a)}` };
+    }
+    if (l === 2) {
+      const a = rnd(0, 10);
+      return { text: 'Finde die verliebte Zahl!', viz: herzHaelfte(a, 'links', '#ec4899'), typ: 'eingabe', felder: [{ loesung: 10 - a }],
+        zeile: [{ kasten: a }, { fest: '+' }, { feld: 0 }, { fest: '= 10' }],
+        hinweis: `Wie viel fehlt von ${a} bis 10?`, erklaerung: `${a} + <b>${10 - a}</b> = 10${a > 0 && a < 10 ? verliebtStreifen(a) : ''}` };
+    }
+    const a = rnd(1, 9) * 10;
+    return { text: 'Verliebte Zehnerzahlen: Was fehlt bis 100?', typ: 'eingabe', felder: [{ loesung: 100 - a }],
+      zeile: [{ kasten: a }, { fest: '+' }, { feld: 0 }, { fest: '= 100' }],
+      hinweis: `Denk an die verliebten Zahlen: ${a / 10} + ${10 - a / 10} = 10.`,
+      erklaerung: `${a / 10} + ${10 - a / 10} = 10, also ist ${a} + <b>${100 - a}</b> = 100.` };
+  },
+
+  doppel(l) {
+    const max = l === 1 ? 5 : 10;
+    if (l < 3) {
+      if (Math.random() < 0.5) {
+        const a = rnd(1, max);
+        return { text: `Verdopple die ${a}!`, viz: reihen([a, a]), typ: 'eingabe', felder: [{ loesung: 2 * a }],
+          zeile: [{ kasten: a }, { fest: '+' }, { kasten: a }, { fest: '=' }, { feld: 0 }],
+          hinweis: `Verdoppeln heißt: ${a} + ${a}.`, erklaerung: `Das Doppelte von ${a} ist <b>${2 * a}</b>, denn ${a} + ${a} = ${2 * a}.` };
+      }
+      const h = rnd(1, max), b = 2 * h;
+      return { text: `Halbiere die ${b}!`, viz: reihen(b > 10 ? [10, b - 10] : [b], ['#e2483d']), typ: 'eingabe', felder: [{ loesung: h }],
+        zeile: [{ fest: 'Die Hälfte von' }, { kasten: b }, { fest: 'ist' }, { feld: 0 }],
+        hinweis: `Welche Zahl musst du verdoppeln, damit ${b} herauskommt?`,
+        erklaerung: `Die Hälfte von ${b} ist <b>${h}</b>, denn ${h} + ${h} = ${b}.${reihen([h, h])}` };
+    }
+    const art = rnd(1, 3);
+    if (art === 1) {
+      const a = rnd(3, 9);
+      return { text: 'Nachbaraufgabe: Rechne mit dem Verdoppel-Trick!', viz: reihen([a, a + 1]), typ: 'eingabe', felder: [{ loesung: 2 * a + 1 }],
+        zeile: [{ kasten: a }, { fest: '+' }, { kasten: a + 1 }, { fest: '=' }, { feld: 0 }],
+        hinweis: `${a} + ${a} = ${2 * a}. Und ${a + 1} ist eins mehr als ${a} …`,
+        erklaerung: `${a} + ${a} = ${2 * a}, also ist ${a} + ${a + 1} eins mehr: <b>${2 * a + 1}</b>.` };
+    }
+    if (art === 2) {
+      const a = rnd(1, 5) * 10;
+      return { text: `Verdopple die ${a}!`, typ: 'eingabe', felder: [{ loesung: 2 * a }],
+        zeile: [{ kasten: a }, { fest: '+' }, { kasten: a }, { fest: '=' }, { feld: 0 }],
+        hinweis: `${a / 10} + ${a / 10} = ${a / 5}. Jetzt mit Zehnern!`, erklaerung: `${a / 10} Zehner + ${a / 10} Zehner = ${a / 5} Zehner = <b>${2 * a}</b>.` };
+    }
+    const h = rnd(1, 5) * 10;
+    return { text: `Halbiere die ${2 * h}!`, typ: 'eingabe', felder: [{ loesung: h }],
+      zeile: [{ fest: 'Die Hälfte von' }, { kasten: 2 * h }, { fest: 'ist' }, { feld: 0 }],
+      hinweis: `Die Hälfte von ${h / 5} ist ${h / 10}. Jetzt mit Zehnern!`, erklaerung: `Die Hälfte von ${2 * h} ist <b>${h}</b>, denn ${h} + ${h} = ${2 * h}.` };
+  },
+};
+
+function aufgabenRunde(id, stufe) {
+  const anzahl = id === 'schatz' ? 10 : 8;
+  const liste = [], schon = new Set();
+  let versuche = 0;
+  while (liste.length < anzahl && versuche < 200) {
+    versuche++;
+    let t;
+    if (id === 'schatz') {
+      const st = pick(STATIONEN);
+      const l = Math.min(freieStufe(st.id), stufe === 3 ? 3 : stufe + 1);
+      t = { ...GEN[st.id](Math.max(1, l)), herkunft: st.id };
+    } else t = { ...GEN[id](stufe), herkunft: id };
+    const schluessel = t.herkunft + ohneTags(t.text) + t.loesung + (t.felder || []).map(f => f.loesung).join();
+    if (schon.has(schluessel) && versuche < 150) continue;
+    schon.add(schluessel);
+    liste.push(t);
+  }
+  return liste;
+}
+
+// ---------- Sticker ----------
+const STICKER = [
+  ['🐶', 'Hund', 1], ['🐱', 'Katze', 3], ['🦊', 'Fuchs', 5], ['🐼', 'Panda', 7], ['🦁', 'Löwe', 9], ['🐸', 'Frosch', 12],
+  ['🐢', 'Schildkröte', 15], ['🦄', 'Einhorn', 18], ['🐙', 'Krake', 21], ['🦋', 'Schmetterling', 24], ['🐝', 'Biene', 27], ['🐬', 'Delfin', 30],
+  ['🦉', 'Eule', 34], ['🐞', 'Marienkäfer', 38], ['🦒', 'Giraffe', 42], ['🐘', 'Elefant', 46], ['🐧', 'Pinguin', 50], ['🦖', 'Dino', 55],
+  ['🐿️', 'Eichhörnchen', 60], ['🦜', 'Papagei', 64], ['🐳', 'Wal', 68], ['🦩', 'Flamingo', 72], ['🐨', 'Koala', 76], ['👑', 'Goldkrone', 81],
+];
+const freieSticker = (sterne) => STICKER.filter(s => sterne >= s[2]);
+
+// ---------- Allgemeine Anzeige ----------
+function kopfAktualisieren() {
+  document.getElementById('sternzahl').textContent = `⭐ ${sterneGesamt()}`;
+  document.getElementById('tonKnopf').textContent = S.ton ? '🔊' : '🔇';
+}
+function rmAus() { rm.className = 'rueckmeldung'; rm.innerHTML = ''; }
+function konfetti(anzahl = 40) {
+  const k = document.getElementById('konfetti');
+  const zeichen = ['⭐', '🎉', '✨', '💛', '🟡', '🔷', '🎈'];
+  for (let i = 0; i < anzahl; i++) {
+    const s = document.createElement('span');
+    s.textContent = pick(zeichen);
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDuration = (1.8 + Math.random() * 1.8) + 's';
+    s.style.animationDelay = (Math.random() * 0.6) + 's';
+    k.appendChild(s);
+    setTimeout(() => s.remove(), 4200);
+  }
+}
+function igel(text) { return `<div class="igel"><div class="tier" aria-hidden="true">🦔</div><div class="blase">${text}</div></div>`; }
+
+// ---------- Seiten ----------
+function willkommen() {
+  rmAus();
+  bild.innerHTML = `
+    ${igel('Hallo! Ich bin <b>Ida, der Igel</b>. Ich begleite dich durch das Zahlen-Abenteuer. Wie heißt du?')}
+    <div class="karte" style="text-align:center">
+      <input class="text" id="nameFeld" maxlength="20" placeholder="Dein Vorname" autocomplete="off" aria-label="Dein Vorname">
+      <div class="knopfreihe">
+        <button class="knopf" id="los">Los geht's! 🚀</button>
+      </div>
+      <p class="klein">Dein Name bleibt nur auf diesem Gerät.</p>
+    </div>`;
+  const feld = document.getElementById('nameFeld');
+  document.getElementById('los').onclick = () => { S.name = feld.value.trim().slice(0, 20); S.begruesst = true; sichern(); karte(); };
+}
+
+function karte() {
+  rmAus();
+  kopfAktualisieren();
+  const gruss = pick(['Wohin geht die Reise heute?', 'Welche Insel möchtest du besuchen?', 'Bereit für ein neues Abenteuer?']);
+  const name = S.name ? `Hallo ${S.name.replace(/[<>&]/g, '')}! ` : 'Hallo! ';
+  const kachel = (st) => {
+    const b = stationsDaten(st.id).best;
+    const mini = `⭐ ${b[1] + b[2] + b[3]} von 9`;
+    return `<button class="insel${st.id === 'schatz' ? ' schatz' : ''}" style="--farbe:${st.farbe}" data-st="${st.id}">
+      <span class="icon" aria-hidden="true">${st.icon}</span>
+      <span><span class="name">${st.name}</span>${st.id === 'schatz' ? '<br><span class="klein">Aufgaben von allen Inseln</span>' : ''}</span>
+      <span class="mini">${mini}</span>
+    </button>`;
+  };
+  bild.innerHTML = `${igel(name + gruss)}
+    <div class="inseln">${STATIONEN.map(kachel).join('')}${kachel(SCHATZ)}</div>
+    <button class="erwachsene" id="erw">Für Erwachsene</button>`;
+  bild.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { klang.klick(); stationsSeite(b.dataset.st); });
+  document.getElementById('erw').onclick = erwachsenenTor;
+}
+
+function stationsSeite(id, gewaehlt) {
+  rmAus();
+  const st = station(id);
+  const d = stationsDaten(id);
+  const frei = id === 'schatz' ? 3 : freieStufe(id);
+  let stufe = gewaehlt || Math.min(d.letzte || frei, frei);
+  const zeichnen = () => {
+    bild.innerHTML = `
+      <div style="--farbe:${st.farbe}">
+        <div class="station-kopf"><span class="icon" aria-hidden="true">${st.icon}</span><h1>${st.name}</h1></div>
+        <div class="tipp">${st.tipp()}</div>
+        <div class="stufen">${[1, 2, 3].map(l => `
+          <button class="stufe-knopf${l === stufe ? ' aktiv' : ''}" data-l="${l}" ${l > frei ? 'disabled' : ''}>
+            <span>${l > frei ? '🔒' : ''} Stufe ${l}</span>
+            <span style="color:#f5b301">${'★'.repeat(d.best[l])}${'☆'.repeat(3 - d.best[l])}</span>
+            <small>${l > frei ? `2 Sterne in Stufe ${l - 1} holen` : st.stufen[l - 1]}</small>
+          </button>`).join('')}
+        </div>
+        <div class="knopfreihe">
+          <button class="knopf" id="start" style="font-size:1.4rem;min-width:220px">Los! ▶</button>
+        </div>
+        ${id === 'hoeren' && !kannSprechen ? '<p class="klein" style="text-align:center">Dieses Gerät kann leider nicht vorlesen. Du siehst die Zahl dann als Wort.</p>' : ''}
+      </div>`;
+    bild.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { stufe = +b.dataset.l; klang.klick(); zeichnen(); });
+    document.getElementById('start').onclick = () => spielStarten(id, stufe);
+  };
+  zeichnen();
+}
+
+// ---------- Spiel ----------
+let G = null;
+
+function spielStarten(id, stufe) {
+  G = { id, stufe, aufgaben: aufgabenRunde(id, stufe), i: 0, punkte: 0, ergebnisse: [] };
+  const d = stationsDaten(id);
+  d.letzte = stufe;
+  sichern();
+  aufgabeZeigen();
+}
+
+function farbeVon(t) { return station(G.id === 'schatz' ? t.herkunft : G.id).farbe; }
+
+function aufgabeZeigen() {
+  rmAus();
+  const t = G.aufgaben[G.i];
+  G.versuch = 1;
+  G.fertig = false;
+  const farbe = farbeVon(t);
+  const punkte = G.aufgaben.map((_, k) => {
+    const r = G.ergebnisse[k];
+    const cls = k === G.i ? 'jetzt' : r === undefined ? '' : r === 1 ? 'ok' : r > 0 ? 'halb' : 'nein';
+    return `<i class="${cls}"></i>`;
+  }).join('');
+  const herkunft = G.id === 'schatz' ? `<div class="unter">${station(t.herkunft).icon} ${station(t.herkunft).name}</div>` : '';
+
+  bild.innerHTML = `
+    <div style="--farbe:${farbe}">
+      <div class="spiel-kopf">
+        <button class="rund" id="abbrechen" aria-label="Runde beenden">✕</button>
+        <div class="fortschritt" aria-label="Aufgabe ${G.i + 1} von ${G.aufgaben.length}">${punkte}</div>
+        <span class="stufe-chip">Stufe ${G.stufe}</span>
+      </div>
+      <div class="karte aufgabe" id="aufgabe">
+        ${herkunft}
+        <div class="aufgabe-text"><button class="vorlesen" id="vorlesen" aria-label="Aufgabe vorlesen">🔈</button><span>${t.text}</span></div>
+        ${t.unter ? `<div class="unter">${t.unter}</div>` : ''}
+        ${t.hoeren !== undefined ? `<div class="hoeren"><button class="lautsprecher" id="hoerKnopf" aria-label="Zahl anhören">🔊</button></div><div class="wort" id="wort"></div>` : ''}
+        ${t.viz || t.typ === 'legen' ? `<div class="viz-box" id="vizbox">${t.viz || ''}<div class="decke" aria-hidden="true">🙈</div></div>` : ''}
+        ${t.dauer ? '<button class="knopf hell nochmal-zeigen" id="nochmal" hidden>👀 Nochmal kurz zeigen</button>' : ''}
+        <div id="antwort"></div>
+      </div>
+    </div>`;
+
+  document.getElementById('abbrechen').onclick = () => { if (confirm('Runde wirklich beenden?')) stationsSeite(G.id); };
+  document.getElementById('vorlesen').onclick = () => sprich(ohneTags(t.text) + (t.unter ? '. ' + t.unter : ''));
+
+  if (t.hoeren !== undefined) {
+    const spiele = () => { if (!sprich(t.hoeren)) document.getElementById('wort').textContent = t.hoeren; };
+    document.getElementById('hoerKnopf').onclick = spiele;
+    setTimeout(spiele, 350);
+    if (!kannSprechen) document.getElementById('wort').textContent = t.hoeren;
+  }
+
+  if (t.dauer) {
+    const box = document.getElementById('vizbox'), noch = document.getElementById('nochmal');
+    let nochmalGenutzt = false;
+    const zudecken = () => { box.classList.add('verdeckt'); if (!nochmalGenutzt && !G.fertig) noch.hidden = false; };
+    G.timer = setTimeout(zudecken, t.dauer);
+    noch.onclick = () => { nochmalGenutzt = true; noch.hidden = true; box.classList.remove('verdeckt'); clearTimeout(G.timer); G.timer = setTimeout(zudecken, 1200); };
+  }
+
+  const antwort = document.getElementById('antwort');
+  if (t.typ === 'wahl') wahlAufbauen(t, antwort);
+  else if (t.typ === 'eingabe') eingabeAufbauen(t, antwort);
+  else legenAufbauen(t, antwort);
+}
+
+function wahlAufbauen(t, el) {
+  const vier = !t.breit && t.optionen.length === 4;
+  el.innerHTML = `<div class="wahl${vier ? ' vier' : ''}">${t.optionen.map(o => `<button class="option" data-w="${o.wert}">${o.html || o.wert}</button>`).join('')}</div>`;
+  el.querySelectorAll('.option').forEach(b => {
+    b.onclick = () => {
+      if (G.fertig) return;
+      const w = +b.dataset.w;
+      if (w === t.loesung) {
+        b.classList.add('richtig');
+        el.querySelectorAll('.option').forEach(x => x.disabled = true);
+        richtig(t);
+      } else {
+        b.classList.add('falsch'); b.disabled = true;
+        falsch(t, w, () => {
+          el.querySelectorAll('.option').forEach(x => { x.disabled = true; if (+x.dataset.w === t.loesung) x.classList.add('richtig'); });
+        });
+      }
+    };
+  });
+}
+
+function eingabeAufbauen(t, el) {
+  const werte = t.felder.map(() => '');
+  let aktiv = 0;
+  const zeile = t.zeile || [{ feld: 0 }];
+  const zeichneZeile = () => zeile.map(z => {
+    if (z.feld !== undefined) {
+      const f = t.felder[z.feld];
+      return `<span class="feld-wrap"><span class="feld${z.feld === aktiv ? ' aktiv' : ''}" data-f="${z.feld}" role="textbox" aria-label="${f.label || 'Antwort'}">${werte[z.feld]}</span>${f.label ? `<small>${f.label}</small>` : ''}</span>`;
+    }
+    if (z.kasten !== undefined) return `<span class="kasten">${z.kasten}</span>`;
+    return `<span class="fest">${z.fest}</span>`;
+  }).join('');
+  el.innerHTML = `<div class="zeile" id="zeile">${zeichneZeile()}</div>
+    <div class="tasten">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="taste" data-t="${n}">${n}</button>`).join('')}
+      <button class="taste weg" data-t="weg" aria-label="Löschen">⌫</button><button class="taste" data-t="0">0</button><button class="taste ok" data-t="ok" aria-label="Prüfen">✔</button></div>`;
+  const neu = () => {
+    document.getElementById('zeile').innerHTML = zeichneZeile();
+    el.querySelectorAll('.feld').forEach(f => f.onclick = () => { aktiv = +f.dataset.f; neu(); });
+  };
+  neu();
+  const pruefen = () => {
+    if (werte.some(w => w === '')) { aktiv = werte.findIndex(w => w === ''); neu(); return; }
+    const ok = t.felder.every((f, i) => +werte[i] === f.loesung);
+    if (ok) {
+      G.fertig = true;
+      neu();
+      el.querySelectorAll('.feld').forEach(f => f.classList.add('richtig'));
+      richtig(t);
+    } else {
+      const falscheFelder = t.felder.map((f, i) => +werte[i] !== f.loesung);
+      el.querySelectorAll('.feld').forEach(f => f.classList.toggle('falsch', falscheFelder[+f.dataset.f]));
+      falsch(t, werte.join(' / '), () => {
+        t.felder.forEach((f, i) => { werte[i] = String(f.loesung); });
+        neu();
+        el.querySelectorAll('.feld').forEach(f => f.classList.add('richtig'));
+      }, () => {
+        // zweiter Versuch: falsche Felder leeren
+        falscheFelder.forEach((x, i) => { if (x) werte[i] = ''; });
+        aktiv = falscheFelder.indexOf(true);
+        neu();
+      });
+    }
+  };
+  el.querySelectorAll('.taste').forEach(b => {
+    b.onclick = () => {
+      if (G.fertig) return;
+      const k = b.dataset.t;
+      klang.klick();
+      if (k === 'ok') return pruefen();
+      if (k === 'weg') { werte[aktiv] = werte[aktiv].slice(0, -1); neu(); return; }
+      if (werte[aktiv].length >= 3) return;
+      werte[aktiv] += k;
+      const soll = String(t.felder[aktiv].loesung).length;
+      if (werte[aktiv].length >= soll && aktiv < t.felder.length - 1 && werte[aktiv + 1] === '') aktiv++;
+      neu();
+    };
+  });
+}
+
+function legenAufbauen(t, el) {
+  let z = 0, e = 0;
+  const box = document.getElementById('vizbox');
+  const zeige = () => { box.innerHTML = (z || e ? dienes(z, e) : '<div class="klein" style="padding:30px">Noch leer – leg los!</div>') + '<div class="decke"></div>'; };
+  zeige();
+  el.innerHTML = `<div class="legen">
+      <button class="knopf z" data-a="z+">+ Zehner</button><button class="knopf e" data-a="e+">+ Einer</button>
+      <button class="knopf hell" data-a="z-">− Zehner</button><button class="knopf hell" data-a="e-">− Einer</button>
+    </div>
+    <div class="knopfreihe" style="margin-top:4px"><button class="knopf" id="fertig" style="--farbe:var(--gruen)">Fertig ✔</button></div>`;
+  el.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+    if (G.fertig) return;
+    klang.klick();
+    const a = b.dataset.a;
+    if (a === 'z+' && z < 9) z++;
+    if (a === 'z-' && z > 0) z--;
+    if (a === 'e+' && e < 9) e++;
+    if (a === 'e-' && e > 0) e--;
+    zeige();
+  });
+  document.getElementById('fertig').onclick = () => {
+    if (G.fertig) return;
+    const n = z * 10 + e;
+    if (n === t.ziel) { G.fertig = true; richtig(t); }
+    else falsch(t, `${z} Z ${e} E`, () => { z = Z(t.ziel); e = E(t.ziel); zeige(); },
+      null, `Du hast ${z} Zehner und ${e} Einer gelegt. Das ist ${n}.`);
+  };
+}
+
+const LOB = ['Super!', 'Toll gemacht!', 'Richtig!', 'Klasse!', 'Spitze!', 'Prima!', 'Stark!', 'Genau!'];
+
+function richtig(t) {
+  G.fertig = true;
+  clearTimeout(G.timer);
+  const p = G.versuch === 1 ? 1 : 0.5;
+  G.punkte += p;
+  G.ergebnisse[G.i] = p;
+  klang.richtig();
+  rm.className = 'rueckmeldung an gut';
+  rm.innerHTML = `<div class="rm-inhalt"><div class="tier" aria-hidden="true">🦔</div>
+    <div class="rm-text"><strong>${pick(LOB)}${G.versuch > 1 ? ' Beim zweiten Mal geschafft!' : ''}</strong>${ohneTags(t.erklaerung).length < 80 ? t.erklaerung.replace(/<svg[\s\S]*<\/svg>/g, '') : ''}</div>
+    <button class="knopf" id="weiter">Weiter ➜</button></div>`;
+  document.getElementById('weiter').onclick = weiter;
+  G.autoWeiter = setTimeout(weiter, 2200);
+}
+
+function falsch(t, gegeben, zeigeLoesung, zweiterVersuch, zusatz) {
+  clearTimeout(G.autoWeiter);
+  document.getElementById('aufgabe').classList.remove('wackeln');
+  void document.getElementById('aufgabe').offsetWidth;
+  document.getElementById('aufgabe').classList.add('wackeln');
+  if (G.versuch === 1) {
+    G.versuch = 2;
+    klang.tipp();
+    rm.className = 'rueckmeldung an tipp-an';
+    rm.innerHTML = `<div class="rm-inhalt"><div class="tier" aria-hidden="true">🦔</div>
+      <div class="rm-text"><strong>Fast! Versuch es nochmal.</strong>${zusatz ? zusatz + ' ' : ''}${t.hinweis}</div>
+      <button class="knopf" id="nochmalVersuch" style="--farbe:var(--orange)">OK</button></div>`;
+    const zu = () => { rmAus(); if (zweiterVersuch) zweiterVersuch(); };
+    document.getElementById('nochmalVersuch').onclick = zu;
+    return;
+  }
+  G.fertig = true;
+  clearTimeout(G.timer);
+  G.ergebnisse[G.i] = 0;
+  klang.falsch();
+  zeigeLoesung();
+  const box = document.getElementById('vizbox');
+  if (box) box.classList.remove('verdeckt');
+  S.fehler.unshift({
+    st: t.herkunft, aufgabe: ohneTags(t.text), gegeben: String(gegeben),
+    richtig: t.felder ? t.felder.map(f => f.loesung).join(' / ') : String(t.loesung), zeit: Date.now(),
+  });
+  S.fehler = S.fehler.slice(0, 40);
+  sichern();
+  rm.className = 'rueckmeldung an schlecht';
+  rm.innerHTML = `<div class="rm-inhalt"><div class="tier" aria-hidden="true">🦔</div>
+    <div class="rm-text"><strong>Schau mal, so geht's:</strong>${t.erklaerung}</div>
+    <button class="knopf" id="weiter">Weiter ➜</button></div>`;
+  document.getElementById('weiter').onclick = weiter;
+}
+
+function weiter() {
+  clearTimeout(G.autoWeiter);
+  if (!G.fertig) return;
+  G.fertig = false;
+  G.i++;
+  if (G.i < G.aufgaben.length) aufgabeZeigen();
+  else ergebnis();
+}
+
+function ergebnis() {
+  rmAus();
+  const max = G.aufgaben.length;
+  const anteil = G.punkte / max;
+  const sterne = anteil >= 0.95 ? 3 : anteil >= 0.75 ? 2 : anteil >= 0.5 ? 1 : 0;
+  const vorher = sterneGesamt();
+  const d = stationsDaten(G.id);
+  const freiVorher = G.id === 'schatz' ? 3 : freieStufe(G.id);
+  d.gespielt++;
+  if (sterne > d.best[G.stufe]) d.best[G.stufe] = sterne;
+  S.runden++;
+  sichern();
+  const nachher = sterneGesamt();
+  const neueSticker = freieSticker(nachher).filter(s => vorher < s[2]);
+  const freiNachher = G.id === 'schatz' ? 3 : freieStufe(G.id);
+  kopfAktualisieren();
+
+  const st = station(G.id);
+  const text = sterne === 3 ? 'Wow, alles richtig! Du bist ein Zahlen-Profi!'
+    : sterne === 2 ? 'Sehr gut gemacht!'
+    : sterne === 1 ? 'Gut! Mit etwas Übung schaffst du noch mehr Sterne.'
+    : 'Das war schwer. Probier es gleich nochmal – Ida glaubt an dich!';
+  const punkteText = Number.isInteger(G.punkte) ? G.punkte : String(G.punkte).replace('.', ',');
+  bild.innerHTML = `
+    <div class="karte ergebnis" style="--farbe:${st.farbe}">
+      <div class="grosse-sterne" aria-label="${sterne} von 3 Sternen">${[1, 2, 3].map(k => `<span class="${k <= sterne ? '' : 'aus'}">⭐</span>`).join('')}</div>
+      <h2 style="margin:6px 0">${text}</h2>
+      <p class="klein">${punkteText} von ${max} Punkten</p>
+      ${freiNachher > freiVorher ? `<div class="neuer-sticker">🔓 Stufe ${freiNachher} ist jetzt frei!</div>` : ''}
+      ${neueSticker.map(s => `<div class="neuer-sticker"><span class="emoji">${s[0]}</span>Neuer Sticker: ${s[1]}!</div>`).join('')}
+      <div class="knopfreihe">
+        <button class="knopf" id="nochmalRunde">🔁 Nochmal</button>
+        ${freiNachher > G.stufe && G.stufe < 3 ? `<button class="knopf" id="naechste" style="--farbe:var(--gruen)">Stufe ${G.stufe + 1} ➜</button>` : ''}
+        <button class="knopf hell" id="zurKarte">🗺️ Zur Karte</button>
+      </div>
+    </div>`;
+  if (sterne > 0) klang.sterne();
+  if (sterne === 3 || neueSticker.length) konfetti(neueSticker.length ? 60 : 40);
+  document.getElementById('nochmalRunde').onclick = () => spielStarten(G.id, G.stufe);
+  const n = document.getElementById('naechste');
+  if (n) n.onclick = () => spielStarten(G.id, G.stufe + 1);
+  document.getElementById('zurKarte').onclick = karte;
+}
+
+// ---------- Stickerheft ----------
+function album() {
+  rmAus();
+  const sterne = sterneGesamt();
+  const frei = freieSticker(sterne).length;
+  const naechster = STICKER.find(s => sterne < s[2]);
+  bild.innerHTML = `
+    ${igel(`Du hast <b>${frei} von ${STICKER.length}</b> Stickern gesammelt!${naechster ? ` Noch ${naechster[2] - sterne} ⭐ bis zum nächsten.` : ' Du hast alle – unglaublich!'}`)}
+    <div class="album">${STICKER.map(s => sterne >= s[2]
+      ? `<div class="sticker"><span class="emoji">${s[0]}</span><small>${s[1]}</small></div>`
+      : `<div class="sticker zu"><span class="emoji">${s[0]}</span><small>ab ${s[2]} ⭐</small></div>`).join('')}</div>
+    <div class="knopfreihe"><button class="knopf hell" id="zurKarte">🗺️ Zur Karte</button></div>`;
+  document.getElementById('zurKarte').onclick = karte;
+}
+
+// ---------- Bereich für Erwachsene ----------
+function erwachsenenTor() {
+  rmAus();
+  const a = rnd(6, 9), b = rnd(6, 9);
+  bild.innerHTML = `<div class="karte" style="text-align:center">
+    <h2>Für Erwachsene</h2>
+    <p>Bitte lösen: <b>${a} × ${b}</b> = ?</p>
+    <input class="text" id="torFeld" inputmode="numeric" autocomplete="off" aria-label="Ergebnis" style="max-width:160px;text-align:center">
+    <div class="knopfreihe"><button class="knopf" id="torOk">Öffnen</button><button class="knopf hell" id="zurKarte">Zurück</button></div>
+  </div>`;
+  document.getElementById('torOk').onclick = () => {
+    if (+document.getElementById('torFeld').value === a * b) erwachsene();
+    else document.getElementById('torFeld').value = '';
+  };
+  document.getElementById('zurKarte').onclick = karte;
+}
+
+function erwachsene() {
+  const zeilen = STATIONEN.concat([SCHATZ]).map(st => {
+    const d = stationsDaten(st.id);
+    return `<tr><td>${st.icon} ${st.name}</td>${[1, 2, 3].map(l => `<td>${'★'.repeat(d.best[l])}${'☆'.repeat(3 - d.best[l])}</td>`).join('')}<td>${d.gespielt}</td></tr>`;
+  }).join('');
+  const fehler = S.fehler.slice(0, 25).map(f => {
+    const st = station(f.st) || { icon: '', name: '' };
+    const datum = new Date(f.zeit).toLocaleDateString('de-DE');
+    return `<tr><td>${st.icon} ${st.name}</td><td>${f.aufgabe}</td><td style="color:#c62828">${f.gegeben}</td><td style="color:#1b7f4b">${f.richtig}</td><td class="klein">${datum}</td></tr>`;
+  }).join('');
+  bild.innerHTML = `
+    <div class="karte">
+      <h2 style="margin-top:0">Lernstand</h2>
+      <p class="klein">Gespielte Runden insgesamt: <b>${S.runden}</b> · Sterne: <b>${sterneGesamt()}</b> · Sticker: <b>${freieSticker(sterneGesamt()).length}/${STICKER.length}</b></p>
+      <div style="overflow-x:auto"><table class="tabelle">
+        <tr><th>Insel</th><th>Stufe 1</th><th>Stufe 2</th><th>Stufe 3</th><th>Runden</th></tr>${zeilen}
+      </table></div>
+      <h3>Letzte Fehler</h3>
+      ${fehler ? `<div style="overflow-x:auto"><table class="tabelle"><tr><th>Insel</th><th>Aufgabe</th><th>Antwort</th><th>Richtig</th><th>Datum</th></tr>${fehler}</table></div>` : '<p class="klein">Noch keine Fehler gespeichert.</p>'}
+      <h3>Einstellungen</h3>
+      <p><label>Name: <input class="text" id="nameNeu" maxlength="20" value="${(S.name || '').replace(/"/g, '&quot;')}"></label></p>
+      <div class="knopfreihe" style="justify-content:flex-start">
+        <button class="knopf" id="nameSpeichern">Name speichern</button>
+        <button class="knopf" id="loeschen" style="--farbe:var(--rot)">Alles zurücksetzen</button>
+        <button class="knopf hell" id="zurKarte">🗺️ Zur Karte</button>
+      </div>
+      <p class="klein">Alle Daten werden nur in diesem Browser auf diesem Gerät gespeichert und nirgendwohin gesendet.</p>
+    </div>`;
+  document.getElementById('nameSpeichern').onclick = () => { S.name = document.getElementById('nameNeu').value.trim().slice(0, 20); sichern(); karte(); };
+  document.getElementById('loeschen').onclick = () => {
+    if (confirm('Wirklich alle Sterne, Sticker und Fehler löschen?')) {
+      S = { name: S.name, ton: S.ton, stationen: {}, fehler: [], runden: 0, begruesst: true };
+      sichern(); karte();
+    }
+  };
+  document.getElementById('zurKarte').onclick = karte;
+}
+
+// ---------- Start ----------
+document.getElementById('heim').onclick = () => {
+  if (G && !G.beendet && bild.querySelector('#aufgabe') && !confirm('Runde wirklich beenden?')) return;
+  clearTimeout(G?.timer); clearTimeout(G?.autoWeiter);
+  karte();
+};
+document.getElementById('albumKnopf').onclick = () => { clearTimeout(G?.timer); clearTimeout(G?.autoWeiter); album(); };
+document.getElementById('tonKnopf').onclick = () => { S.ton = !S.ton; sichern(); kopfAktualisieren(); };
+
+kopfAktualisieren();
+if (S.begruesst) karte(); else willkommen();
+
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
